@@ -26,14 +26,4 @@ export class ActivityPubController {
         await this.activitypub.follow(username);
         return {};
     }
-
-    @Roles([
-        'Owner'
-    ])
-    @Get('following')
-    async getFollowing(): Promise<{id: string, username?: string;}[]> {
-        const followers = await this.activitypub.getFollowing();
-
-        return followers;
-    }
 }
