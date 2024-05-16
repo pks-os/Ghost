@@ -22,6 +22,10 @@ describe('ActivityPubController', function () {
             controllers: [ActivityPubController],
             providers: [
                 {
+                    provide: 'logger',
+                    useValue: console
+                },
+                {
                     provide: 'ActivityPubBaseURL',
                     useValue: new URL('https://example.com')
                 },
@@ -96,6 +100,12 @@ describe('ActivityPubController', function () {
     it('Can handle requests to get the following', async function () {
         await request(app.getHttpServer())
             .get('/activitypub/following/deadbeefdeadbeefdeadbeef')
+            .expect(200);
+    });
+
+    it('Can handle requests to get the followers', async function () {
+        await request(app.getHttpServer())
+            .get('/activitypub/followers/deadbeefdeadbeefdeadbeef')
             .expect(200);
     });
 
