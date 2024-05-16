@@ -109,8 +109,11 @@ export class Actor extends Entity<ActorData> {
         const activity = new Activity({
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Follow',
-            actor: this.actorId,
-            object: actor,
+            actor: this,
+            object: {
+                ...actor,
+                type: 'Person'
+            },
             to: actor.id
         });
         this.doActivity(activity);
@@ -125,8 +128,11 @@ export class Actor extends Entity<ActorData> {
             activity: new URI(`activity/${(new ObjectID).toHexString()}`),
             type: 'Accept',
             to: activity.actorId,
-            actor: this.actorId,
-            object: {id: activity.activityId}
+            actor: this,
+            object: {
+                id: activity.activityId,
+                type: 'Follow'
+            }
         });
         this.doActivity(accept);
     }
@@ -150,8 +156,8 @@ export class Actor extends Entity<ActorData> {
             activity: new URI(`activity/${new ObjectID().toHexString()}`),
             to: this.followersCollectionId,
             type: 'Create',
-            actor: this.actorId,
-            object: {id: article.objectId}
+            actor: this,
+            object: article
         });
         this.doActivity(activity);
     }

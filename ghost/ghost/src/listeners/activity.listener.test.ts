@@ -28,8 +28,9 @@ describe('ActivityListener', function () {
             const activity = new Activity({
                 type: 'Follow',
                 activity: null,
-                actor: actor.actorId,
+                actor: actor,
                 object: {
+                    type: 'Person',
                     id: toFollow
                 },
                 to: toFollow

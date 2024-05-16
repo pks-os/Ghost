@@ -25,8 +25,9 @@ describe('TheWorld', function () {
             const activity = new Activity({
                 type: 'Follow',
                 activity: null,
-                actor: actor.actorId,
+                actor: actor,
                 object: {
+                    type: 'Person',
                     id: toFollow
                 },
                 to: toFollow
@@ -60,7 +61,11 @@ describe('TheWorld', function () {
             const activity = new Activity({
                 type: 'Create',
                 activity: null,
+<<<<<<< HEAD
                 actor: actor.actorId,
+=======
+                actor: actor,
+>>>>>>> upstream/main
                 object: {
                     id: new URI('https://main.ghost.org/hello-world'),
                     type: 'Note',
