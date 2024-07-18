@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.87.2",
+  "version": "5.87.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -219,7 +219,6 @@
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
     "probe-image-size": "7.2.3",
-    "redos-detector": "5.1.0",
     "rss": "1.2.2",
     "sanitize-html": "2.13.0",
     "semver": "7.6.2",
