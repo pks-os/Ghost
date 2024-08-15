@@ -7834,10 +7834,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-5.0.3.tgz#7d0e5af2191f2e0c61ae11d1666905bf924f67ac"
   integrity sha512-uPE69rKxaiiMEa1vFsEbfX+LCBG2H5D/nqTkuIPAslEGIHYjQUruaXpBfnwtyVHn+dMLuWcO+wDJl5qET8gKEQ==
 
-"@tryghost/kg-default-cards@10.0.8":
-  version "10.0.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.0.8.tgz#ed67a90c1b5fe045c3e2822be8e14f43ccc2ee3a"
-  integrity sha512-yLao7TDpDDDHjiTqbl+6wmISpx//iuXY00gS7JqNrZ8X7hZ6IvxUdXu1Hq9AZuyzZ6+nqvyqRYgvZ1VycSVtTQ==
+"@tryghost/kg-default-cards@10.0.9":
+  version "10.0.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.0.9.tgz#6ea967c3270c4fd895f9f3b7773bc1203370fb45"
+  integrity sha512-y5P5ybNX846PZ7N+z3Gs5curkqKSU0qNVjve0TVwQe5J3kHPwTKH4eMFcqrEQj9Tu3XgIqx0XWxXL3bSN6uWiw==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "7.0.7"
     "@tryghost/string" "0.2.12"
@@ -7847,10 +7847,10 @@
     lodash "^4.17.21"
     luxon "^3.5.0"
 
-"@tryghost/kg-default-nodes@1.1.12":
-  version "1.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-1.1.12.tgz#40be11e6a898f14e4249f05142e14e72ab956068"
-  integrity sha512-zBeCgpcFZibehWzo10HjzKFS2RSW8AvSakShpX3h4skSDG9Tkki60b5ATczxiLFswHerEvnBacHEgZO1xzzbNQ==
+"@tryghost/kg-default-nodes@1.1.15":
+  version "1.1.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-1.1.15.tgz#eeaed10aade6a0f4d5031c2530290c8dc73be06d"
+  integrity sha512-RN5UVt75od0inG93kDlarl7cJ1BpVsGP3pLCBKyIxYOQVTotclQXIm0/Y4N+KklhVoUs6YQZV8ZC4W30jV1HlQ==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/rich-text" "0.13.1"
@@ -7864,21 +7864,21 @@
     lodash "^4.17.21"
     luxon "^3.5.0"
 
-"@tryghost/kg-default-transforms@1.1.13":
-  version "1.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-1.1.13.tgz#6d38f687f2f363d4b85a615216e1b83aff417954"
-  integrity sha512-AvTpBNpUzpTI4EYtJ+xZapKxfz7mu/ZbdTgxCnuMkWRe0Cw3uOl838gaKHTMNuP76k7HCxNVW61gGm/FVofo5g==
+"@tryghost/kg-default-transforms@1.1.16":
+  version "1.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-1.1.16.tgz#e95cfa76267aaf34243e445b99c9e212001db3f9"
+  integrity sha512-WMNYehmUg0u7R+tYm3WIxP8WDA51MYxibTL2LNo17VjDHJp/VFCoDhc6I2tAGeH7loVBtp421llMr+33aa5DHQ==
   dependencies:
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
     "@lexical/utils" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.12"
+    "@tryghost/kg-default-nodes" "1.1.15"
     lexical "0.13.1"
 
-"@tryghost/kg-html-to-lexical@1.1.13":
-  version "1.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.1.13.tgz#83f9a24b30ba0a40f07ab1c8c66eb9c99904f049"
-  integrity sha512-lVb0V5ckZ1SPjMzTfxzZ61ABN9koCNLQd1nCYHyNLunLH5IVVY2yRFNLt2CHtbfUMcjvGv4Egfi/g9oRwJkBiQ==
+"@tryghost/kg-html-to-lexical@1.1.16":
+  version "1.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.1.16.tgz#f2048bd42a5faafd28e9380b940e7a69a7ebc4b7"
+  integrity sha512-LLnZ+1jPonbDJ0DbBqfJwOVfBw1HfLjsyvM2reZO7GRq7J+ScLUxgc2AMe3q/bT9Dlny0qfCDSO/0kW/nUMqGA==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/headless" "0.13.1"
@@ -7886,15 +7886,15 @@
     "@lexical/link" "0.13.1"
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.12"
-    "@tryghost/kg-default-transforms" "1.1.13"
+    "@tryghost/kg-default-nodes" "1.1.15"
+    "@tryghost/kg-default-transforms" "1.1.16"
     jsdom "^24.1.0"
     lexical "0.13.1"
 
-"@tryghost/kg-lexical-html-renderer@1.1.15":
-  version "1.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.1.15.tgz#9512fc14a3ed83baf7ce5577bbf3b33cde78292b"
-  integrity sha512-hCx7iizJvmbwUWtrQKOEOmH+lPmxzcoOf+gpxOL3actEcfFYHO9lYWTVg9x8s6Q8eyzLQ3lIh9mpdktzmz+x9g==
+"@tryghost/kg-lexical-html-renderer@1.1.18":
+  version "1.1.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.1.18.tgz#b2475194f2e64126be3a36ee59457065e52507f9"
+  integrity sha512-36IHSXx373rWIitpPIx6bN5uPZRi7lFuv5JY6IYPnB519UruV5V+YJvSFZhNv6YYZgrV6P1Zcum6TB4bGY9+LA==
   dependencies:
     "@lexical/clipboard" "0.13.1"
     "@lexical/code" "0.13.1"
@@ -7902,8 +7902,8 @@
     "@lexical/link" "0.13.1"
     "@lexical/list" "0.13.1"
     "@lexical/rich-text" "0.13.1"
-    "@tryghost/kg-default-nodes" "1.1.12"
-    "@tryghost/kg-default-transforms" "1.1.13"
+    "@tryghost/kg-default-nodes" "1.1.15"
+    "@tryghost/kg-default-transforms" "1.1.16"
     jsdom "^24.1.0"
     lexical "0.13.1"
 
@@ -7950,10 +7950,10 @@
   dependencies:
     semver "^7.6.2"
 
-"@tryghost/koenig-lexical@1.3.16":
-  version "1.3.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.16.tgz#b1f317e969dcfa6b01f3a7f6dce55c872bb6f833"
-  integrity sha512-jyLZL5QiMF+GjUIAHD/h69cb+PZrvC+9fA05lFTyBPlgVRc1L2qTu99Xo6YH+ZrE+mIBfmNfKRfmIRJRD5AR5w==
+"@tryghost/koenig-lexical@1.3.19":
+  version "1.3.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.3.19.tgz#f3766260da782cfd14bd74ffca01009a1786c80b"
+  integrity sha512-X8oYWGl65cJ2XLDopWiTZtkc2sVgWerOSBrTFBvq6+oh0FKpYUKEYGBVN3xZm7wEnwwtQgqpbB6MwSiMDjGCag==
 
 "@tryghost/limit-service@1.2.14":
   version "1.2.14"
@@ -22118,10 +22118,10 @@ linkifyjs@^4.1.0:
   resolved "https://registry.yarnpkg.com/linkifyjs/-/linkifyjs-4.1.1.tgz#73d427e3bbaaf4ca8e71c589ad4ffda11a9a5fde"
   integrity sha512-zFN/CTVmbcVef+WaDXT63dNzzkfRBKT1j464NJQkV7iSgJU0sLBus9W0HBwnXK13/hf168pbrx/V/bjEHOXNHA==
 
-lint-staged@15.2.8:
-  version "15.2.8"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.2.8.tgz#5e19eb7b4dbb922f56fafb4635b44ee3c92f7322"
-  integrity sha512-PUWFf2zQzsd9EFU+kM1d7UP+AZDbKFKuj+9JNVTBkhUFhbg4MAt6WfyMMwBfM4lYqd4D2Jwac5iuTu9rVj4zCQ==
+lint-staged@15.2.9:
+  version "15.2.9"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.2.9.tgz#bf70d40b6b192df6ad756fb89822211615e0f4da"
+  integrity sha512-BZAt8Lk3sEnxw7tfxM7jeZlPRuT4M68O0/CwZhhaw6eeWu0Lz5eERE3m386InivXB64fp/mDID452h48tvKlRQ==
   dependencies:
     chalk "~5.3.0"
     commander "~12.1.0"
