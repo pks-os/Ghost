@@ -41,8 +41,8 @@ export default class Analytics extends Component {
     @tracked postCount = null;
     @tracked showPostCount = false;
     @tracked shouldAnimate = false;
-    @tracked previousSentCount = this.post.email.emailCount;
-    @tracked previousOpenedCount = this.post.email.openedCount;
+    @tracked previousSentCount = this.post.email?.emailCount;
+    @tracked previousOpenedCount = this.post.email?.openedCount;
     @tracked previousClickedCount = this.post.count.clicks;
     @tracked previousFeedbackCount = this.totalFeedback;
     @tracked previousConversionsCount = this.post.count.conversions;
@@ -50,9 +50,7 @@ export default class Analytics extends Component {
 
     constructor() {
         super(...arguments);
-        if (this.feature.publishFlowEndScreen) {
-            this.checkPublishFlowModal();
-        }
+        this.checkPublishFlowModal();
     }
 
     openPublishFlowModal() {
@@ -73,11 +71,7 @@ export default class Analytics extends Component {
     }
 
     get post() {
-        if (this.feature.publishFlowEndScreen) {
-            return this._post ?? this.args.post;
-        }
-
-        return this.args.post;
+        return this._post ?? this.args.post;
     }
 
     set post(value) {
@@ -374,15 +368,15 @@ export default class Analytics extends Component {
 
     @task
     *fetchPostTask() {
-        const currentSentCount = this.post.email.emailCount;
-        const currentOpenedCount = this.post.email.openedCount;
+        const currentSentCount = this.post.email?.emailCount;
+        const currentOpenedCount = this.post.email?.openedCount;
         const currentClickedCount = this.post.count.clicks;
         const currentFeedbackCount = this.totalFeedback;
         const currentConversionsCount = this.post.count.conversions;
 
         this.shouldAnimate = true;
 
-        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'email,count.clicks,count.conversions,count.positive_feedback,count.negative_feedback', limit: 1});
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'email,count.clicks,count.conversions,count.positive_feedback,count.negative_feedback,sentiment', limit: 1});
         this.post = result.toArray()[0];
 
         this.previousSentCount = currentSentCount;
