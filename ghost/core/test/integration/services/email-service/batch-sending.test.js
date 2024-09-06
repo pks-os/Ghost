@@ -170,7 +170,6 @@ describe('Batch sending tests', function () {
     });
 
     it('Protects the email job from being run multiple times at the same time', async function () {
-        this.retries(1);
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
@@ -240,6 +239,9 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel2.get('email_count'), 5);
         const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel2.id}'`});
         assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
+
+        // Clean up laterMember
+        await models.Member.destroy({id: laterMember.id});
     });
 
     it('Splits recipients in free and paid batch', async function () {
@@ -249,7 +251,7 @@ describe('Batch sending tests', function () {
             // Required to trigger the paywall
             visibility: 'paid'
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -258,7 +260,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithFreeMemberOnly // = different content for paid and free members (extra content for free in this case)
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -267,7 +269,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidMemberOnly // = different content for paid and free members (extra content for paid in this case)
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -276,7 +278,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidAndFreeMemberOnly // = different content for paid and free members
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -287,7 +289,7 @@ describe('Batch sending tests', function () {
             // Required to trigger the paywall
             visibility: 'paid'
         }, null, [
-            {segment: 'status:free', recipients: 3},
+            {segment: 'status:free', recipients: 2},
             {segment: 'status:-free', recipients: 2}
         ]);
     });
@@ -296,7 +298,7 @@ describe('Batch sending tests', function () {
         await testEmailBatches({
             mobiledoc: mobileDocExample // = same content for free and paid, no need to split batches
         }, null, [
-            {segment: null, recipients: 5}
+            {segment: null, recipients: 4}
         ]);
     });
 
@@ -368,7 +370,6 @@ describe('Batch sending tests', function () {
             {segment: null, recipients: 1},
             {segment: null, recipients: 1},
             {segment: null, recipients: 1},
-            {segment: null, recipients: 1},
             {segment: null, recipients: 1}
         ]);
     });
@@ -383,7 +384,6 @@ describe('Batch sending tests', function () {
             {segment: 'status:-free', recipients: 1},
 
             // 3 free
-            {segment: 'status:free', recipients: 1},
             {segment: 'status:free', recipients: 1},
             {segment: 'status:free', recipients: 1}
         ]);
@@ -408,11 +408,11 @@ describe('Batch sending tests', function () {
 
         // Prepare a post and email model
         const {emailModel} = await sendFailedEmail(agent);
-        assert.equal(emailModel.get('email_count'), 5);
+        assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
         let batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
-        assert.equal(batches.models.length, 5);
+        assert.equal(batches.models.length, 4);
 
         // sort batches by id because findAll doesn't have order option
         batches.models.sort(sortBatches);
@@ -424,7 +424,7 @@ describe('Batch sending tests', function () {
         for (const batch of batches.models) {
             count += 1;
 
-            if (count === 5) {
+            if (count === 4) {
                 assert.equal(batch.get('provider_id'), null);
                 assert.equal(batch.get('status'), 'failed');
                 assert.equal(batch.get('error_status_code'), 500);
@@ -433,13 +433,7 @@ describe('Batch sending tests', function () {
                 assert.equal(errorData.error.status, 500);
                 assert.deepEqual(errorData.messageData.to.length, 1);
             } else {
-                if (count === 4) {
-                    // We sorted on provider_id so the count is slightly off
-                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-5');
-                } else {
-                    assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
-                }
-
+                assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
                 assert.equal(batch.get('status'), 'submitted');
                 assert.equal(batch.get('error_status_code'), null);
                 assert.equal(batch.get('error_message'), null);
@@ -469,14 +463,14 @@ describe('Batch sending tests', function () {
         batches.models.sort(sortBatches);
 
         assert.equal(emailModel.get('status'), 'submitted');
-        assert.equal(emailModel.get('email_count'), 5);
+        assert.equal(emailModel.get('email_count'), 4);
 
         // Did we keep the batches?
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
         // sort batches by provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
-        assert.equal(batches.models.length, 5);
+        assert.equal(batches.models.length, 4);
 
         emailRecipients = [];
 
@@ -684,7 +678,6 @@ describe('Batch sending tests', function () {
         });
 
         it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
-            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 name: 'Simon Tester',
@@ -860,7 +853,6 @@ describe('Batch sending tests', function () {
         });
 
         it('Shows subscription details box for free members', async function () {
-            this.retries(1);
             // Create a new member without a first_name
             await models.Member.add({
                 email: 'subscription-box-1@example.com',
