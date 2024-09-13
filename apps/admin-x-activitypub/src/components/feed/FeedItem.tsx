@@ -38,7 +38,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         return (
             <div className={`attachment-gallery mt-2 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -89,10 +89,10 @@ function renderInboxAttachment(object: ObjectProperties) {
         // }
         return (
             <div className='min-w-[160px]'>
-                <div className='relative'>
+                {attachment[0] && <div className='relative'>
                     <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment[0].url} />
                     <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>
+                </div>}
             </div>
         );
     }
@@ -103,7 +103,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/gif':
         return (
             <div className='min-w-[160px]'>
-                <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />
+                {attachment && <img className={`h-[100px] w-[160px] rounded-md object-cover`} src={attachment.url} />}
             </div>
         );
     case 'video/mp4':
@@ -197,9 +197,12 @@ interface FeedItemProps {
     type: string;
     comments?: Activity[];
     last?: boolean;
+    onClick?: () => void;
 }
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last}) => {
+const noop = () => {};
+
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comments = [], last, onClick = noop}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -219,7 +222,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`}>
+                    <div className={`group/article relative cursor-pointer pt-6`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
@@ -262,7 +265,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div>
-                        <div className={`group/article relative cursor-pointer`}>
+                        <div className={`group/article relative cursor-pointer`} onClick={onClick}>
                             {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                                 <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                                 <span className='z-10'>{actor.name} reposted</span>
@@ -299,7 +302,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mx-[-32px] my-4 h-px w-[120%] bg-grey-200"></div>
+                        <div className="mx-[-32px] mt-3 h-px w-[120%] bg-grey-200"></div>
                     </div>
 
                 )}
@@ -309,12 +312,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-5`}>
+                    <div className={`group/article relative cursor-pointer py-5`} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200 pb-4`} data-test-activity>
+                        <div className={`border-1 z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 border-b-grey-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author}/>
                             </div>
@@ -345,7 +348,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             {/* </div> */}
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-9px] w-[2px] rounded-sm bg-grey-200"></div>}
+                        {!last && <div className="absolute bottom-0 left-[18px] top-[6.5rem] z-0 mb-[-13px] w-[2px] rounded-sm bg-grey-200"></div>}
                     </div>
                 )}
             </>
@@ -354,7 +357,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75'>
+                    <div className='group/article relative -mx-4 -mt-px cursor-pointer rounded-md px-4 hover:bg-grey-75' onClick={onClick}>
                         <div className='z-10 flex items-start gap-3 py-4 group-hover/article:border-transparent'>
                             <APAvatar author={author} size='xs'/>
                             <div className='z-10 w-full'>
