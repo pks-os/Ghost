@@ -7326,10 +7326,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.5.2.tgz#db7257d727c891905947bd1c1a99da20e03c2ebd"
   integrity sha512-YAh82Wh4TIrxYLmfGcixwD18oIjyC1pFQC2Y01F2lzV2HTMiYrI0nze0FD0ocB//CKS/7jIUgae+adPqxK5yCQ==
 
-"@tinybirdco/charts@0.2.0-beta.2":
-  version "0.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.0-beta.2.tgz#0b3ed104d23496bbd4809ee49852f522a3636dfe"
-  integrity sha512-05gLrdiM3kc4QJpDvideX0BjP++SfQ+K6XhxglE8wT/84TkzWpX1ouexyFc5FdsHTnGqeiVx+lhMMwSkN8G6Vg==
+"@tinybirdco/charts@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.1.tgz#60894995f2901ece3d7cd11d329a571ebd591acd"
+  integrity sha512-kTzQU3yB9eFATw2DUZR2R+mDYeCO/IkwncgOTcf8Un0v1aSKnG2B9N0vZ9B1zTe3DE7rNd9ChLOyfRtsUAkRGw==
   dependencies:
     echarts "^5.5.0"
     swr "^2.2.5"
@@ -29832,10 +29832,10 @@ table@^6.0.9, table@^6.8.1:
     string-width "^4.2.3"
     strip-ansi "^6.0.1"
 
-tailwindcss@3.4.12:
-  version "3.4.12"
-  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.12.tgz#fd3b67c6d2c04d9d7bfa13e3fc70ccef9fef0455"
-  integrity sha512-Htf/gHj2+soPb9UayUNci/Ja3d8pTmu9ONTfh4QY8r3MATTZOzmv6UYWF7ZwikEIC8okpfqmGqrmDehua8mF8w==
+tailwindcss@3.4.13:
+  version "3.4.13"
+  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.13.tgz#3d11e5510660f99df4f1bfb2d78434666cb8f831"
+  integrity sha512-KqjHOJKogOUt5Bs752ykCeiwvi0fKVkr5oqsFNt/8px/tA8scFPIlkygsf6jXrfCqGHz7VflA6+yytWuM+XhFw==
   dependencies:
     "@alloc/quick-lru" "^5.2.0"
     arg "^5.0.2"
