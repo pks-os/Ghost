@@ -10,11 +10,11 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import Separator from './global/Separator';
-import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
-import {useSearchForUser} from '../hooks/useActivityPubQueries';
+
+import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
 interface SearchResultItem {
     actor: ActorProperties;
@@ -28,8 +28,6 @@ interface SearchResultProps {
     result: SearchResultItem;
     update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
-
-interface SearchProps {}
 
 const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     const onFollow = () => {
@@ -120,9 +118,13 @@ const SuggestedAccounts: React.FC<{
     );
 };
 
+interface SearchProps {}
+
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggested, isLoadingSuggested, updateSuggestedProfile} = useSuggestedProfiles(6);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', 6);
+    const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const suggested = suggestedData || [];
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
