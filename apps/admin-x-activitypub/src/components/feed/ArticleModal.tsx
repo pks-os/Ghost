@@ -16,6 +16,7 @@ import {useThreadForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 
 interface ArticleModalProps {
@@ -36,71 +37,6 @@ interface ArticleModalProps {
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
-
-interface TOCItem {
-    id: string;
-    text: string;
-    level: number;
-    element?: HTMLElement;
-}
-
-const TableOfContents: React.FC<{
-    items: TOCItem[];
-    activeId: string | null;
-    onItemClick: (id: string) => void;
-}> = ({items, onItemClick}) => {
-    if (items.length === 0) {
-        return null;
-    }
-
-    const getLineWidth = (level: number) => {
-        switch (level) {
-        case 1:
-            return 'w-5';
-        case 2:
-            return 'w-3';
-        default:
-            return 'w-2';
-        }
-    };
-
-    return (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-sm">
-            <Popover
-                position='center'
-                side='right'
-                trigger={
-                    <div className="flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-grey-75">
-                        {items.map(item => (
-                            <div
-                                key={item.id}
-                                className={`h-[2px] rounded-sm bg-grey-300 transition-all ${getLineWidth(item.level)}`}
-                            />
-                        ))}
-                    </div>
-                }
-            >
-                <div className="w-[220px] p-4">
-                    <nav className="max-h-[60vh] overflow-y-auto">
-                        {items.map(item => (
-                            <button
-                                key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-600 hover:bg-grey-75 hover:text-grey-900`}
-                                style={{
-                                    paddingLeft: `${(item.level - 1) * 12}px`
-                                }}
-                                type='button'
-                                onClick={() => onItemClick(item.id)}
-                            >
-                                {item.text}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
-            </Popover>
-        </div>
-    );
-};
 
 const ArticleBody: React.FC<{
     heading: string;
@@ -294,13 +230,33 @@ const ArticleBody: React.FC<{
                 return;
             }
 
-            const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el, idx) => {
+            // Get all headings except the article title
+            const headingElements = Array.from(
+                iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')
+            );
+
+            if (headingElements.length === 0) {
+                return;
+            }
+
+            // Find the highest level (smallest number) heading
+            const highestLevel = Math.min(
+                ...headingElements.map(el => parseInt(el.tagName[1]))
+            );
+
+            // Map headings and normalize their levels
+            const headings = headingElements.map((el, idx) => {
                 const id = `heading-${idx}`;
                 el.id = id;
+
+                // Calculate normalized level (e.g., if highest is h3, then h3->h1, h4->h2)
+                const actualLevel = parseInt(el.tagName[1]);
+                const normalizedLevel = actualLevel - highestLevel + 1;
+
                 return {
                     id,
                     text: el.textContent || '',
-                    level: parseInt(el.tagName[1]),
+                    level: normalizedLevel,
                     element: el as HTMLElement
                 };
             });
@@ -831,7 +787,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
                             <div className="sticky top-1/2 -translate-y-1/2">
                                 <TableOfContents
-                                    activeId={activeHeadingId}
                                     items={tocItems}
                                     onItemClick={scrollToHeading}
                                 />
