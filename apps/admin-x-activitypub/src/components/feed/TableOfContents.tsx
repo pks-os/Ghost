@@ -10,6 +10,7 @@ export interface TOCItem {
 
 interface TableOfContentsProps {
     items: TOCItem[];
+    activeHeading: string;
     onItemClick: (id: string) => void;
 }
 
@@ -25,7 +26,7 @@ const HEADING_PADDINGS = {
     3: 'pl-10'
 } as const;
 
-const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) => {
+const TableOfContents: React.FC<TableOfContentsProps> = ({items, activeHeading, onItemClick}) => {
     if (items.length === 0) {
         return null;
     }
@@ -49,11 +50,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) =
                 position='center'
                 side='right'
                 trigger={
-                    <div className='flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-grey-75'>
+                    <div className='flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-gray-75 dark:bg-black dark:hover:bg-gray-950'>
                         {items.map(item => (
                             <div
                                 key={item.id}
-                                className={`h-[2px] rounded-sm bg-grey-400 pr-1 transition-all ${getLineWidth(item.level)}`}
+                                className={`h-[2px] rounded-sm ${activeHeading === item.id ? 'bg-black dark:bg-white' : 'bg-gray-400 dark:bg-gray-700'} pr-1 transition-all ${getLineWidth(item.level)}`}
                             />
                         ))}
                     </div>
@@ -68,7 +69,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) =
                         {items.map(item => (
                             <button
                                 key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-700 hover:bg-grey-75 hover:text-grey-900 ${getHeadingPadding(item.level)}`}
+                                className={`block w-full cursor-pointer truncate rounded py-1 text-left ${activeHeading === item.id ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
                                 title={item.text}
                                 type='button'
                                 onClick={() => onItemClick(item.id)}

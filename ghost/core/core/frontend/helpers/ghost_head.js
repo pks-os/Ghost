@@ -151,9 +151,16 @@ function getWebmentionDiscoveryLink() {
 }
 
 function getTinybirdTrackerScript(dataRoot) {
-    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
+    const preview = dataRoot?.context?.includes('preview');
+    if (preview) {
+        return '';
+    }
+
+    const src = getAssetUrl('public/ghost-stats.js');
+
     const endpoint = config.get('tinybird:tracker:endpoint');
     const token = config.get('tinybird:tracker:token');
+    const datasource = config.get('tinybird:tracker:datasource');
 
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
@@ -162,7 +169,11 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+}
+
+function getHCaptchaScript() {
+    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
 }
 
 /**
@@ -351,6 +362,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
+            }
+
+            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+                head.push(getHCaptchaScript());
             }
 
             // Check if if the request is for a site preview, in which case we **always** use the custom font values

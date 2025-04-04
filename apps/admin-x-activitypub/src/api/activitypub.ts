@@ -1,18 +1,12 @@
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Actor = any;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-export interface Profile {
-    actor: Actor;
-    handle: string;
-    followerCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-}
-
-interface Account {
+export interface Account {
     id: string;
     name: string;
     handle: string;
@@ -27,6 +21,7 @@ interface Account {
     followerCount: number;
     followsMe: boolean;
     followedByMe: boolean;
+    attachment: {name: string, value: string}[];
 }
 
 export type AccountSearchResult = Pick<
@@ -38,13 +33,13 @@ export interface SearchResults {
     accounts: AccountSearchResult[];
 }
 
-export interface ActivityThread {
-    items: Activity[];
+export interface Thread {
+    posts: Post[];
 }
 
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
-export interface GetFollowersForProfileResponse {
+export interface GetProfileFollowersResponse {
     followers: {
         actor: Actor;
         isFollowing: boolean;
@@ -52,7 +47,7 @@ export interface GetFollowersForProfileResponse {
     next: string | null;
 }
 
-export interface GetFollowingForProfileResponse {
+export interface GetProfileFollowingResponse {
     following: {
         actor: Actor;
         isFollowing: boolean;
@@ -60,7 +55,7 @@ export interface GetFollowingForProfileResponse {
     next: string | null;
 }
 
-export interface GetPostsForProfileResponse {
+export interface GetProfilePostsResponse {
     posts: Activity[];
     next: string | null;
 }
@@ -69,10 +64,81 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
-export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'>;
+export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
     accounts: FollowAccount[];
+    next: string | null;
+}
+
+export interface Notification {
+    id: string;
+    type: 'like' | 'reply' | 'repost' | 'follow';
+    actor: {
+        id: string;
+        name: string;
+        url: string;
+        handle: string;
+        avatarUrl: string | null;
+    },
+    post: null | {
+        id: string;
+        type: 'article' | 'note';
+        title: string | null;
+        content: string;
+        url: string;
+    },
+    inReplyTo: null | {
+        id: string;
+        type: 'article' | 'note';
+        title: string | null;
+        content: string;
+        url: string;
+    }
+}
+
+export interface GetNotificationsResponse {
+    notifications: Notification[];
+    next: string | null;
+}
+
+export enum PostType {
+    Note = 0,
+    Article = 1,
+    Tombstone = 2
+}
+
+export interface Post {
+    id: string;
+    type: PostType;
+    title: string;
+    excerpt: string;
+    content: string;
+    url: string;
+    featureImageUrl: string | null;
+    publishedAt: string;
+    likeCount: number;
+    likedByMe: boolean;
+    replyCount: number;
+    readingTimeMinutes: number;
+    attachments: {
+        type: string;
+        mediaType: string;
+        name: string;
+        url: string;
+    }[];
+    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    authoredByMe: boolean;
+    repostCount: number;
+    repostedByMe: boolean;
+    repostedBy: Pick<
+        Account,
+        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
+    > | null;
+}
+
+export interface PaginatedPostsResponse {
+    posts: Post[];
     next: string | null;
 }
 
@@ -95,7 +161,7 @@ export class ActivityPubAPI {
         }
     }
 
-    private async fetchJSON(url: URL, method: 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
+    private async fetchJSON(url: URL, method: 'DELETE' | 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
         const token = await this.getToken();
         const options: RequestInit = {
             method,
@@ -109,84 +175,13 @@ export class ActivityPubAPI {
             (options.headers! as Record<string, string>)['Content-Type'] = 'application/json';
         }
         const response = await this.fetch(url, options);
+
+        if (response.status === 204) {
+            return null;
+        }
+
         const json = await response.json();
         return json;
-    }
-
-    private async getActivityPubCollection<T>(collectionUrl: URL, cursor?: string): Promise<ActivityPubCollectionResponse<T>> {
-        const url = new URL(collectionUrl);
-        url.searchParams.set('cursor', cursor || '0');
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        if (!('orderedItems' in json)) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        const data = Array.isArray(json.orderedItems) ? json.orderedItems : [];
-        let next = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        if (next !== null) {
-            const nextUrl = new URL(next);
-            next = nextUrl.searchParams.get('cursor') || null;
-        }
-
-        return {
-            data,
-            next
-        };
-    }
-
-    get inboxApiUrl() {
-        return new URL(`.ghost/activitypub/inbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getInbox(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.inboxApiUrl);
-        if (json === null) {
-            return [];
-        }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
-    }
-
-    get outboxApiUrl() {
-        return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getOutbox(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
-    }
-
-    get followingApiUrl() {
-        return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowing(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followingApiUrl, cursor);
-    }
-
-    get followersApiUrl() {
-        return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowers(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followersApiUrl, cursor);
     }
 
     async follow(username: string): Promise<Actor> {
@@ -195,12 +190,10 @@ export class ActivityPubAPI {
         return json as Actor;
     }
 
-    get likedApiUrl() {
-        return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
-    }
-
-    async getLiked(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.likedApiUrl, cursor);
+    async unfollow(username: string): Promise<Actor> {
+        const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST');
+        return json as Actor;
     }
 
     async like(id: string): Promise<void> {
@@ -213,57 +206,14 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    get activitiesApiUrl() {
-        return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
+    async repost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/repost/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
     }
 
-    async getActivities(
-        includeOwn: boolean = false,
-        includeReplies: boolean = false,
-        filter: {type?: string[]} | null = null,
-        limit: number = 50,
-        cursor?: string
-    ): Promise<{data: Activity[], next: string | null}> {
-        const url = new URL(this.activitiesApiUrl);
-
-        url.searchParams.set('limit', limit.toString());
-
-        if (includeOwn) {
-            url.searchParams.set('includeOwn', includeOwn.toString());
-        }
-        if (includeReplies) {
-            url.searchParams.set('includeReplies', includeReplies.toString());
-        }
-        if (filter) {
-            url.searchParams.set('filter', JSON.stringify(filter));
-        }
-        if (cursor) {
-            url.searchParams.set('cursor', cursor);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        if (!('items' in json)) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        const data = Array.isArray(json.items) ? json.items : [];
-        const next = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            data,
-            next
-        };
+    async derepost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/derepost/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
     }
 
     async reply(id: string, content: string): Promise<Activity> {
@@ -278,13 +228,18 @@ export class ActivityPubAPI {
         return response;
     }
 
+    async delete(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'DELETE');
+    }
+
     get userApiUrl() {
         return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
     }
 
     async getUser() {
         const json = await this.fetchJSON(this.userApiUrl);
-        return json;
+        return json as ActorProperties;
     }
 
     get searchApiUrl() {
@@ -307,13 +262,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getProfile(handle: string): Promise<Profile> {
-        const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
-        const json = await this.fetchJSON(url);
-        return json as Profile;
-    }
-
-    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
+    async getProfileFollowers(handle: string, next?: string): Promise<GetProfileFollowersResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -344,7 +293,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
+    async getProfileFollowing(handle: string, next?: string): Promise<GetProfileFollowingResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -375,7 +324,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getPostsForProfile(handle: string, next?: string): Promise<GetPostsForProfileResponse> {
+    async getProfilePosts(handle: string, next?: string): Promise<GetProfilePostsResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/posts`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -406,18 +355,15 @@ export class ActivityPubAPI {
         };
     }
 
-    async getThread(id: string): Promise<ActivityThread> {
+    async getThread(id: string): Promise<Thread> {
         const url = new URL(`.ghost/activitypub/thread/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
-        return json as ActivityThread;
+        return json as Thread;
     }
 
-    get accountApiUrl() {
-        return new URL(`.ghost/activitypub/account/${this.handle}`, this.apiUrl);
-    }
-
-    async getAccount(): Promise<GetAccountResponse> {
-        const json = await this.fetchJSON(this.accountApiUrl);
+    async getAccount(handle: string): Promise<GetAccountResponse> {        
+        const url = new URL(`.ghost/activitypub/account/${handle}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
 
         return json as GetAccountResponse;
     }
@@ -452,5 +398,82 @@ export class ActivityPubAPI {
             next: nextPage
         };
     }
-}
 
+    async getFeed(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/feed', next);
+    }
+
+    async getInbox(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
+    }
+
+    async getPostsByAccount(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/posts', next);
+    }
+
+    async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/posts/liked', next);
+    }
+
+    private async getPaginatedPosts(endpoint: string, next?: string): Promise<PaginatedPostsResponse> {
+        const url = new URL(endpoint, this.apiUrl);
+
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null || !('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
+            next: nextPage
+        };
+    }
+
+    async getNotifications(next?: string): Promise<GetNotificationsResponse> {
+        const url = new URL('.ghost/activitypub/notifications', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                notifications: [],
+                next: null
+            };
+        }
+
+        if (!('notifications' in json)) {
+            return {
+                notifications: [],
+                next: null
+            };
+        }
+
+        const notifications = Array.isArray(json.notifications) ? json.notifications : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            notifications,
+            next: nextPage
+        };
+    }
+
+    async getPost(id: string): Promise<Post> {
+        const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as Post;
+    }
+}

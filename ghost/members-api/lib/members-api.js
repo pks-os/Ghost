@@ -4,8 +4,7 @@ const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const PaymentsService = require('@tryghost/members-payments');
-
+const PaymentsService = require('./services/PaymentsService');
 const TokenService = require('./services/TokenService');
 const GeolocationService = require('./services/GeolocationService');
 const MemberBREADService = require('./services/MemberBREADService');
@@ -74,7 +73,7 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    config
+    captchaService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -159,8 +158,7 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry,
-        config
+        sentry
     });
 
     const paymentsService = new PaymentsService({
@@ -180,7 +178,8 @@ module.exports = function MembersAPI({
         tiersService,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        settingsCache
     });
 
     const routerController = new RouterController({
@@ -337,6 +336,7 @@ module.exports = function MembersAPI({
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
+            captchaService.getMiddleware(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(

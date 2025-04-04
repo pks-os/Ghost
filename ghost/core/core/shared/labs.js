@@ -24,9 +24,9 @@ const GA_FEATURES = [
     'audienceFeedback',
     'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
-    'customFonts'
+    'customFonts',
+    'contentVisibility'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -39,7 +39,7 @@ const BETA_FEATURES = [
     'ActivityPub',
     'importMemberTier',
     'staff2fa',
-    'contentVisibility'
+    'superEditors'
 ];
 
 const ALPHA_FEATURES = [
@@ -51,8 +51,10 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'postsX',
+    'statsX',
     'captcha',
-    'contentVisibilityAlpha'
+    'contentVisibilityAlpha',
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

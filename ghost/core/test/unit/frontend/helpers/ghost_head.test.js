@@ -1382,6 +1382,44 @@ describe('{{ghost_head}} helper', function () {
         });
     });
 
+    describe('CAPTCHA', function () {
+        beforeEach(function () {
+            configUtils.set({
+                captcha: {
+                    enabled: true
+                }
+            });
+        });
+
+        it('returns CAPTCHA script when enabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('captcha').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/hcaptcha/);
+        });
+
+        it('does not return CAPTCHA script when disabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('captcha').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/hcaptcha/);
+        });
+    });
+
     describe('attribution scripts', function () {
         it('is included when tracking setting is enabled', async function () {
             settingsCache.get.withArgs('members_track_sources').returns(true);
@@ -1418,11 +1456,39 @@ describe('{{ghost_head}} helper', function () {
                         scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
                         endpoint: 'https://api.tinybird.co',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events_json_v1'
                     }
                 }
             });
         });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.js/);
+        });
+
+        it('includes tracker script with subdir', async function () {
+            configUtils.set('url', 'http://localhost:2388/blog/');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.js/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1483,6 +1549,28 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events_json_v1"/);
+        }); 
+
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.js"/);
         });
     });
     describe('respects values from excludes: ', function () {

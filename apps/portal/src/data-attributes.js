@@ -1,12 +1,24 @@
 /* eslint-disable no-console */
-import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
+import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory, hasCaptchaEnabled, getCaptchaSitekey} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import i18nLib from '@tryghost/i18n';
 
-export async function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler},
-    t = (str) => {
-        return str;
-    }) {
+function displayErrorIfElementExists(errorEl, message) {
+    if (errorEl) {
+        errorEl.innerText = message;
+    }
+}
+
+function handleError(error, form, errorEl, t) {
+    form.classList.add('error');
+    const defaultMessage = t('There was an error sending the email, please try again');
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
+}
+
+export async function formSubmitHandler(
+    {event, form, errorEl, siteUrl, captchaId, submitHandler},
+    t = str => str
+) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -61,20 +73,18 @@ export async function formSubmitHandler({event, form, errorEl, siteUrl, submitHa
     }
 
     try {
-        const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {
-            method: 'GET'
-        });
+        const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {method: 'GET'});
         const integrityToken = await integrityTokenRes.text();
+
+        if (captchaId) {
+            const {response} = await window.hcaptcha.execute(captchaId, {async: true});
+            reqBody.token = response;
+        }
 
         const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ...reqBody,
-                integrityToken
-            })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({...reqBody, integrityToken})
         });
 
         form.addEventListener('submit', submitHandler);
@@ -82,21 +92,18 @@ export async function formSubmitHandler({event, form, errorEl, siteUrl, submitHa
         if (magicLinkRes.ok) {
             form.classList.add('success');
         } else {
-            return HumanReadableError.fromApiResponse(magicLinkRes).then((e) => {
-                throw e;
-            });
+            const e = await HumanReadableError.fromApiResponse(magicLinkRes);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
+            displayErrorIfElementExists(errorEl, errorMessage);
+            form.classList.add('error'); // Ensure error state is set here
         }
     } catch (err) {
-        if (errorEl) {
-            // This theme supports a custom error element
-            errorEl.innerText = chooseBestErrorMessage(err, t('There was an error sending the email, please try again'), t);
-        }
-        form.classList.add('error');
+        handleError(err, form, errorEl, t);
     }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale | 'en';
+    const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
     el.removeEventListener('click', clickHandler);
@@ -179,7 +186,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site, member}) {
-    const i18nLanguage = site.locale | 'en';
+    const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
     if (!siteUrl) {
@@ -187,9 +194,20 @@ export function handleDataAttributes({siteUrl, site, member}) {
     }
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
+        let captchaId;
+        if (hasCaptchaEnabled({site})) {
+            const captchaSitekey = getCaptchaSitekey({site});
+            const captchaEl = document.createElement('div');
+            form.appendChild(captchaEl);
+            captchaId = window.hcaptcha.render(captchaEl, {
+                size: 'invisible',
+                sitekey: captchaSitekey
+            });
+        }
+
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, captchaId, submitHandler}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
